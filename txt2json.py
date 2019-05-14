@@ -1,51 +1,27 @@
+import os
 import json
-inDirectPath='wiki-pages-text/wiki-'
-outDirectPath="wiki-pages-json/wiki-"
-wiki1 = {}
+import pickle
+from tqdm import tqdm
+from collections import defaultdict
 
-for i in range(1, 110):
-    # print("searching for the wiki"+str(i))
-    if i < 10:
-        inRealPath = inDirectPath + '00' + str(i) + ".txt"
-        outRealPath= outDirectPath +'00'+ str(i)+".json"
-    elif i < 100:
-        inRealPath = inDirectPath+ '0' + str(i) + ".txt"
-        outRealPath= outDirectPath +'0'+ str(i)+".json"
-    else:
-        inRealPath = inDirectPath + str(i) + '.txt'
-        outRealPath= outDirectPath +str(i)+".json"
+input_path = 'Source/wiki-pages-text'
+wiki_dict = defaultdict(dict)
 
-    with open(inRealPath, 'r+') as fin:
-        print('adding file ',i)
-        wiki_entry = fin.readlines()
-        title = ''
-        for entry in wiki_entry:
-            title = entry.split(' ')[0]
-            label = entry.split(' ')[1]
-            sent = entry.split(' ')[2:]
-            if not wiki1.__contains__(title):
-                wiki1[title] = {label: sent}
-            else:
-                wiki1[title][label] = sent
+print('Reading file...')
 
-    if i==27:
-        with open('wiki-001.json', 'w+') as fout:
-            print("dumping json file ",i)
-            json.dump(wiki1, fout)
-            wiki1={}
-    elif i==54:
-        with open('wiki-002.json', 'w+') as fout:
-            print("dumping json file ",i)
-            json.dump(wiki1, fout)
-            wiki1={}
+for i in tqdm(range(1, 110)):
+    file_name = str(i).zfill(3)
+    input_file = input_path + "/wiki-" + file_name + '.txt'
 
-    elif i==81:
-        with open('wiki-003.json', 'w+') as fout:
-            print("dumping json file ",i)
-            json.dump(wiki1, fout)
-            wiki1={}
+    with open(input_file, 'r+') as wiki_file:
+        for entry in wiki_file:
+            entry = entry.split(' ')
+            title = entry[0]
+            label = entry[1]
+            text = " ".join(entry[2:])
+            wiki_dict[title][label] = text
 
-    elif i==109:
-        with open('wiki-004.json', 'w+') as fout:
-            print("dumping json file ",i)
-            json.dump(wiki1, fout)
+
+output_file = "wiki.json"
+with open(output_file, 'wb') as o:
+    pickle.dump(wiki_dict, o)

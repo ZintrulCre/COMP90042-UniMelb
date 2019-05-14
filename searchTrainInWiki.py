@@ -1,58 +1,36 @@
+import os
 import json
+from tqdm import tqdm
 import pickle
 from time import time
 t1=time()
-actual = json.load(open("train.json",'r+'))
-relation=pickle.load(open('relation.txt','rb'))
+train_json = json.load(open("Source/train.json",'r+'))
+# relation=pickle.load(open('relation.txt','rb'))
 
-print("start loading")
-part1=json.load(open('wiki-001.json','r+'))
-part2=json.load(open('wiki-002.json', 'r+'))
-part3=json.load(open('wiki-003.json', 'r+'))
-part4=json.load(open('wiki-004.json', 'r+'))
-print("finish loading")
+json_dicts = []
+path = "wiki-pages-json"
+files = os.listdir(path)
+for file in tqdm(files):
+    if not os.path.isdir(file):
+        json_dicts.append(json.load(open(path + '/' + file)))
+print(json_dicts)
 
 mlinput=[]
-evidence_dict={}
-i=0
-for entry in actual:
-    print('processing',i)
-    if actual[entry]['label']=='NOT ENOUGH INFO':
-        evidence_dict['verbs']=tuple(relation[i])
+for train_entry in train_json:
+    evidence_dict = {}
+    if train_json[train_entry]['label']=='NOT ENOUGH INFO':
+        # evidence_dict['verbs']=tuple(relation[i])
         evidence_dict['label']='NOT ENOUGH INFO'
         mlinput.append(evidence_dict)
-        evidence_dict={}
     else:
-        evidence_label=actual[entry]['evidence']
-        relation_tuple=tuple(relation[i])
+        evidence_label=train_json[train_entry]['evidence']
+        # relation_tuple=tuple(relation[i])
         for evidence_entry in evidence_label:
-            if part1.__contains__(evidence_entry[0]):
-                evidence_dict['verbs']=(relation_tuple,part1[evidence_entry[0]][str(evidence_entry[1])])
-                evidence_dict['label']=actual[entry]['label']
-                mlinput.append(evidence_dict)
-                evidence_dict={}
-            elif part2.__contains__(evidence_entry[0]):
-                evidence_dict['verbs']=(relation_tuple,part2[evidence_entry[0]][str(evidence_entry[1])])
-                evidence_dict['label']=actual[entry]['label']
-                mlinput.append(evidence_dict)
-                evidence_dict={}
-            elif part3.__contains__(evidence_entry[0]):
-                evidence_dict['verbs']=(relation_tuple,part3[evidence_entry[0]][str(evidence_entry[1])])
-                evidence_dict['label']=actual[entry]['label']
-                mlinput.append(evidence_dict)
-                evidence_dict={}
-            elif  part4.__contains__(evidence_entry[0]):
-                evidence_dict['verbs']=(relation_tuple,part4[evidence_entry[0]][str(evidence_entry[1])])
-                evidence_dict['label']=actual[entry]['label']
-                mlinput.append(evidence_dict)
-                evidence_dict={}
-    i+=1
+            for json_dict in json_dicts:
+                if evidence_entry[0] in json_dict:
+                    # evidence_dict['verbs']=(relation_tuple,part1[evidence_train_entry[0]][str(evidence_train_entry[1])])
+                    evidence_dict['label']=train_json[train_entry]['label']
+                    mlinput.append(evidence_dict)
+    print(evidence_dict)
 
 pickle.dump(mlinput,open("mlinput.txt",'wb'))
-
-#
-
-#
-# for entry in actual:
-#     entry['evidence']
-
