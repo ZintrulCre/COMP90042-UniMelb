@@ -3,16 +3,17 @@ import json
 from tqdm import tqdm
 import pickle
 from time import time
+from collections import defaultdict
 t1=time()
 train_json = json.load(open("Source/train.json",'r+'))
 # relation=pickle.load(open('relation.txt','rb'))
 
-json_dicts = []
+json_dicts = defaultdict(dict)
 path = "wiki-pages-json"
 files = os.listdir(path)
 for file in tqdm(files):
     if not os.path.isdir(file):
-        json_dicts.append(json.load(open(path + '/' + file)))
+        json_dicts += pickle.load(open(path + '/' + file, 'rb'))
 print(json_dicts)
 
 mlinput=[]
