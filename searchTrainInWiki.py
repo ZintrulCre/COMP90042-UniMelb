@@ -6,32 +6,26 @@ from time import time
 from collections import defaultdict
 t1=time()
 train_json = json.load(open("Source/train.json",'r+'))
-# relation=pickle.load(open('relation.txt','rb'))
+relation=pickle.load(open('relation.txt','rb'))
 
-json_dicts = defaultdict(dict)
-path = "wiki-pages-json"
-files = os.listdir(path)
-for file in tqdm(files):
-    if not os.path.isdir(file):
-        json_dicts += pickle.load(open(path + '/' + file, 'rb'))
-print(json_dicts)
+wiki_json = "wiki.json"
+wiki_dict = pickle.load(open(wiki_json, 'rb'))
+print(len(wiki_dict))
 
-mlinput=[]
+ml_input=[]
 for train_entry in train_json:
     evidence_dict = {}
     if train_json[train_entry]['label']=='NOT ENOUGH INFO':
-        # evidence_dict['verbs']=tuple(relation[i])
+        evidence_dict['verbs']=tuple(relation[i])
         evidence_dict['label']='NOT ENOUGH INFO'
-        mlinput.append(evidence_dict)
+        ml_input.append(evidence_dict)
     else:
         evidence_label=train_json[train_entry]['evidence']
-        # relation_tuple=tuple(relation[i])
+        relation_tuple=relation[i]
         for evidence_entry in evidence_label:
-            for json_dict in json_dicts:
-                if evidence_entry[0] in json_dict:
-                    # evidence_dict['verbs']=(relation_tuple,part1[evidence_train_entry[0]][str(evidence_train_entry[1])])
-                    evidence_dict['label']=train_json[train_entry]['label']
-                    mlinput.append(evidence_dict)
+            evidence_dict['verbs'] = (relation[i], wiki_dict[evidence_entry[0]][str(evidence_entry[1])])
+            evidence_dict['label'] = train_json[train_entry]['label']
+            ml_input.append(evidence_dict)
     print(evidence_dict)
 
-pickle.dump(mlinput,open("mlinput.txt",'wb'))
+pickle.dump(ml_input,open("mlinput.txt",'wb'))
