@@ -67,8 +67,7 @@ class Lstm(Model):
                 sentence:Dict[str,torch.Tensor],
                 labels:torch.Tensor==None)->Dict[str,torch.Tensor]:
         mask=get_text_field_mask(sentence)
-        #print(sentence['sentence'])
-        #print(len(sentence),len(labels))
+        print(len(sentence),len(labels))
         embeddings = self.word_embeddings(sentence)
         encoder_out = self.encoder(embeddings, mask)
         tag_logits = self.hidden2tag(encoder_out)
@@ -90,8 +89,8 @@ train_dataset=reader.read('mlinput_merge.txt')
 print("data reading finished")
 
 vocab=Vocabulary.from_instances(train_dataset)
-EMBEDDING_DIM = 6
-HIDDEN_DIM = 6
+EMBEDDING_DIM = 64
+HIDDEN_DIM = 64
 
 token_embedding = Embedding(num_embeddings=vocab.get_vocab_size('sentence'),
                             embedding_dim=EMBEDDING_DIM)
@@ -115,10 +114,7 @@ trainer = Trainer(model=model,
                   patience=10,
                   num_epochs=3)
 print("start training model")
-try:
-    trainer.train()
-except:
-    print()
+trainer.train()
 print("training finished")
 
 print("start saving the weights")
