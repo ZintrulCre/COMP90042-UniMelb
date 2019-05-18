@@ -6,23 +6,25 @@ from allennlp.data import Instance
 from allennlp.data.dataset_readers import DatasetReader
 from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
 from allennlp.models import Model
-from allennlp.modules.seq2seq_encoders import Seq2SeqEncoder, PytorchSeq2SeqWrapper
 from allennlp.modules.seq2vec_encoders import PytorchSeq2VecWrapper, Seq2VecEncoder
 from allennlp.modules.text_field_embedders import TextFieldEmbedder, BasicTextFieldEmbedder
 from allennlp.data.vocabulary import Vocabulary
 from allennlp.training.metrics import CategoricalAccuracy
-from allennlp.nn.util import get_text_field_mask, sequence_cross_entropy_with_logits
+from allennlp.nn.util import get_text_field_mask
 from allennlp.modules.token_embedders import Embedding
-from allennlp.data.iterators import BucketIterator,BasicIterator
+from allennlp.data.iterators import BasicIterator
 from allennlp.training.trainer import Trainer
 from allennlp.predictors import SentenceTaggerPredictor
-from torch.autograd import Variable
 
 import torch.optim as optim
 import numpy as np
 
 import pickle
 import torch
+
+test=pickle.load(open("mlinput.txt",'rb'))
+
+
 
 class VerbDatasetReader(DatasetReader):
 
@@ -41,7 +43,7 @@ class VerbDatasetReader(DatasetReader):
 
     def _read(self, file_path: str)->Iterator[Instance]:
         mlinput_merge=pickle.load(open(file_path,'rb'))
-        for entry in mlinput_merge[:32]:
+        for entry in mlinput_merge:
             sentence_input=[entry['claim']]
             for sent in entry['evidence']:
                 full_sent=' '.join(sent)
@@ -57,7 +59,6 @@ class Lstm(Model):
         self.word_embeddings=word_embeddings
         self.encoder=encoder
         self.hidden2tag = torch.nn.Linear(in_features=encoder.get_output_dim(),out_features=vocab.get_vocab_size('labels'))
-        #self.hidden2tag = torch.nn.RNN(encoder.get_output_dim(),1,vocab.get_vocab_size('labels'))
         self.accuracy = CategoricalAccuracy()
 
     def forward(self,
@@ -66,32 +67,12 @@ class Lstm(Model):
         mask=get_text_field_mask(sentence)
         embeddings = self.word_embeddings(sentence)
         encoder_out = self.encoder(embeddings, mask)
-        #encoder_out=encoder_out.permute(1,0,2)
-        #h0 = Variable(torch.randn(3, 32, 1))
-        #output1,tag_logits = self.hidden2tag(encoder_out,h0)
         tag_logits=self.hidden2tag(encoder_out)
-        #tag_logits=tag_logits.permute(1,0,2)
-        #output1=output1.squeeze()
-        #print("output1 here",output1)
         output = {"tag_logits": tag_logits}
         if labels is not None:
-            # label_input = []
-            # for label in labels:
-            #     if label.data==1:
-            #         label_input.append([1,0,0])
-            #     elif label.data==2:
-            #         label_input.append([0,1,0])
-            #     else:
-            #         label_input.append([0,0,1])
-            # label_input=torch.FloatTensor(label_input)
-            #print(tag_logits,labels.shape,torch.ones(32))
             self.accuracy(tag_logits, labels)
-            #print('output1 here',output1.shape)
-            #print(output1)
-            #output["loss"] = sequence_cross_entropy_with_logits(tag_logits, labels, torch.ones(32,3))
             loss=torch.nn.CrossEntropyLoss()
             output['loss'] = loss(tag_logits,labels)
-            label_input=[]
         return output
 
     def get_metrics(self, reset: bool = False) -> Dict[str, float]:
@@ -112,14 +93,12 @@ HIDDEN_DIM = 6
 token_embedding = Embedding(num_embeddings=vocab.get_vocab_size('tokens'),
                             embedding_dim=EMBEDDING_DIM)
 word_embeddings = BasicTextFieldEmbedder({"sentence": token_embedding})
-#lstm = PytorchSeq2SeqWrapper(torch.nn.LSTM(EMBEDDING_DIM, HIDDEN_DIM, batch_first=True))
 lstm = PytorchSeq2VecWrapper(torch.nn.LSTM(EMBEDDING_DIM, HIDDEN_DIM, batch_first=True))
 
 model = Lstm(word_embeddings, lstm, vocab)
 
 optimizer = optim.SGD(model.parameters(), lr=0.1)
 
-#iterator = BucketIterator(batch_size=64, sorting_keys=[("evidence", "num_tokens")])
 iterator=BasicIterator()
 
 iterator.index_with(vocab)
@@ -146,9 +125,10 @@ print("saving finished")
 predictor = SentenceTaggerPredictor(model, dataset_reader=reader)
 
 print('start doing prediction')
-tag_logits = predictor.predict(train_dataset[0].fields['sentence'])['tag_logits']
+tag_logits = predictor.predict_instance(train_dataset[:100])
 tag_ids = np.argmax(tag_logits, axis=-1)
-print([model.vocab.get_token_from_index(i, 'labels') for i in tag_ids])
+print(tag_ids)
+#print([model.vocab.get_token_from_index(i, 'labels') for i in tag_ids])
 
 print("predicting finished")
 
