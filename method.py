@@ -9,7 +9,8 @@ def getEntity(word_pos):
         if word_pos[i][1][:2]=='NN':
             entity_name.append(word_pos[i][0])
             if i == len(word_pos)-1:
-                return word_pos[i][0]
+                entity.append(word_pos[i][0])
+                return entity
             j=i+1
             try:
                 while(word_pos[j][1][:2]=='NN' and j!=len(word_pos)-1):
