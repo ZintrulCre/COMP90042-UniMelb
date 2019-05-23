@@ -130,7 +130,7 @@ reader = ProjDataSetReader()
 EMBEDDING_DIM = 300
 HIDDEN_DIM = 6
 
-vocab=Vocabulary.from_files("vocabulary4")
+vocab=Vocabulary.from_files("vocabulary5")
 
 token_embedding = Embedding(num_embeddings=vocab.get_vocab_size('tokens'),
                             embedding_dim=EMBEDDING_DIM)
@@ -140,7 +140,7 @@ lstm = PytorchSeq2VecWrapper(torch.nn.LSTM(EMBEDDING_DIM, HIDDEN_DIM, batch_firs
 
 model=Lstm(word_embeddings, lstm, vocab)
 
-with open("model4.th", 'rb') as f:
+with open("model5.th", 'rb') as f:
     model.load_state_dict(torch.load(f,map_location='cpu'))
 
 print("start reading test dataset")
@@ -189,5 +189,5 @@ with torch.no_grad():
 
 
 
-with open('answer2.0.json','w+') as f:
+with open('answer3.0.json','w+') as f:
     json.dump(test,f)
