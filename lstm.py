@@ -104,6 +104,7 @@ class Lstm(Model):
         self.encoder=encoder
         self.hidden2tag = torch.nn.Linear(in_features=encoder.get_output_dim(),out_features=vocab.get_vocab_size('labels'))
         self.accuracy = CategoricalAccuracy()
+        self.m = torch.nn.Dropout(p=0.05)
 
     def forward(self,
                 claim:Dict[str,torch.Tensor],
@@ -118,6 +119,7 @@ class Lstm(Model):
         evidence_encoder_out=self.encoder(evidence_embedding,evidence_mask)
         evidence_tag_logits=self.hidden2tag(evidence_encoder_out)
         tag_logits=claim_tag_logits+evidence_tag_logits
+        tag_logits=self.m(tag_logits)
         output={'tag_logits':tag_logits}
         if label is not None:
             self.accuracy(tag_logits,label)

@@ -45,27 +45,3 @@ def getRelation(word_pos):
             relation_name = []
     return relation
 
-def getFromWiki(entity,label):
-    filePath="wiki-pages-json/wiki-"
-    relevantWiki=[]
-    for i in range(1,110):
-        print("searching for the wiki"+str(i))
-        if i < 10:
-            fileRealPath=filePath+'00'+str(i)+".json"
-        elif i < 100:
-            fileRealPath=filePath+'0'+str(i)+".json"
-        else:
-            fileRealPath=filePath+str(i)+'.json'
-        f=json.load(open(fileRealPath, 'r+'))
-        if f.__contains__(entity):
-            return f[entity][label]
-
-            # wiki_entry = f.readlines()
-            # for entry in wiki_entry:
-            #     for eachEntity in entity:
-            #         if entry.split(' ')[0] == eachEntity:
-            #             print("I find one!")
-            #             relevantWiki.append(entry)
-            # f.close()
-    return relevantWiki
-

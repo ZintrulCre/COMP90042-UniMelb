@@ -24,7 +24,7 @@ import pickle
 import torch
 
 train_input = pickle.load(open("mlinput_merge_with_entity.txt", 'rb'))
-test = json.load(open('text_result.json', 'r+'))
+test = json.load(open('text_result2.0.json', 'r+'))
 idlist=[]
 
 class ProjDataSetReader(DatasetReader):
@@ -169,11 +169,9 @@ with torch.no_grad():
                 if int(id)==0:
                     test[idlist[j+i*32]]['label']="SUPPORTS"
                 elif int(id)==1:
-                    test[idlist[j+i*32]]['label']="REFUTES"
-                elif int(id)==2:
                     test[idlist[j+i*32]]['label']="NOT ENOUGH INFO"
-
-
+                elif int(id)==2:
+                    test[idlist[j+i*32]]['label']="REFUTES"
             else:
                 test[idlist[j + i * 32]]['label'] = "NOT ENOUGH INFO"
             if test[idlist[j + i * 32]]['label'] == "NOT ENOUGH INFO":
@@ -189,5 +187,5 @@ with torch.no_grad():
 
 
 
-with open('answer3.0.json','w+') as f:
+with open('answer4.0.json','w+') as f:
     json.dump(test,f)

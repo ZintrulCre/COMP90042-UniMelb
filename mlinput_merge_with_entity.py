@@ -20,4 +20,4 @@ for entry in mlinput_merge:
     else:
         entry['evidence'].append(entity)
 
-pickle.dump(mlinput_merge,open('mlinput_merge_with_entitiy.txt','wb'))
+pickle.dump(mlinput_merge,open('mlinput_merge_with_entity.txt','wb'))
