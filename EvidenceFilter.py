@@ -32,6 +32,6 @@ for ID in text_result:
             i += 1
         entry['evidence'] = evidence_revised
 
-with open('text_result2.0.json','w+') as f:
+with open('text_result.json','w+') as f:
     json.dump(text_result,f)
 
